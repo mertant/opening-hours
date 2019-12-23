@@ -1,11 +1,11 @@
-package com.example
+package com.mertant.openinghours
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 
 import scala.concurrent.Future
-import com.example.UserRegistry._
+import com.mertant.openinghours.UserRegistry._
 import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern._
@@ -18,8 +18,8 @@ import akka.util.Timeout
 class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val system: ActorSystem[_]) {
 
   //#user-routes-class
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
   import JsonFormats._
+  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
   //#import-json-formats
 
   // If ask takes more time than this to complete the request is failed

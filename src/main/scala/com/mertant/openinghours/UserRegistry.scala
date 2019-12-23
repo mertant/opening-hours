@@ -1,4 +1,4 @@
-package com.example
+package com.mertant.openinghours
 
 //#user-registry-actor
 import akka.actor.typed.ActorRef

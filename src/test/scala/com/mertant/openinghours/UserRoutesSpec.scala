@@ -1,4 +1,4 @@
-package com.example
+package com.mertant.openinghours
 
 //#user-routes-spec
 //#test-top

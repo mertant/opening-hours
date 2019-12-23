@@ -1,6 +1,6 @@
-package com.example
+package com.mertant.openinghours
 
-import com.example.UserRegistry.ActionPerformed
+import com.mertant.openinghours.UserRegistry.ActionPerformed
 
 // File from Akka HTTP Quickstart Scala
 

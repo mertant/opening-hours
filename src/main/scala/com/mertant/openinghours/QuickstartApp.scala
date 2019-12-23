@@ -1,4 +1,4 @@
-package com.example
+package com.mertant.openinghours
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter._
