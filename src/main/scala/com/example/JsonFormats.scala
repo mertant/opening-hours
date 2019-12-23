@@ -2,6 +2,8 @@ package com.example
 
 import com.example.UserRegistry.ActionPerformed
 
+// File from Akka HTTP Quickstart Scala
+
 //#json-formats
 import spray.json.DefaultJsonProtocol
 

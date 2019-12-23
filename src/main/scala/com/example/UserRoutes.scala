@@ -11,6 +11,8 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 
+// File from Akka HTTP Quickstart Scala
+
 //#import-json-formats
 //#user-routes-class
 class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val system: ActorSystem[_]) {

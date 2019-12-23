@@ -6,6 +6,8 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import scala.collection.immutable
 
+// File from Akka HTTP Quickstart Scala
+
 //#user-case-classes
 final case class User(name: String, age: Int, countryOfResidence: String)
 final case class Users(users: immutable.Seq[User])
