@@ -1,19 +1,19 @@
 package com.mertant.openinghours
 
-import com.mertant.openinghours.UserRegistry.ActionPerformed
+import com.mertant.openinghours.dto.{HumanReadableOpeningHours, OpeningHoursDTO}
+import com.mertant.openinghours.model._
 
-// File from Akka HTTP Quickstart Scala
-
-//#json-formats
 import spray.json.DefaultJsonProtocol
 
 object JsonFormats  {
-  // import the default encoders for primitive types (Int, String, Lists etc)
   import DefaultJsonProtocol._
 
-  implicit val userJsonFormat = jsonFormat3(User)
-  implicit val usersJsonFormat = jsonFormat1(Users)
+  implicit val openingHoursDTOFormat = jsonFormat0(OpeningHoursDTO)
+  implicit val humanReadableOpeningHoursFormat = HumanReadableOpeningHours.format
 
-  implicit val actionPerformedJsonFormat = jsonFormat1(ActionPerformed)
+  implicit val hourFormat = jsonFormat1(Hour.apply)
+  implicit val weekDayFormat = jsonFormat1(WeekDay.apply)
+  implicit val timeOfWeekFormat = jsonFormat2(TimeOfWeek.apply)
+  implicit val intervalFormat = jsonFormat2(Interval.apply)
+  implicit val openingHoursModelFormat = jsonFormat1(OpeningHours.apply)
 }
-//#json-formats

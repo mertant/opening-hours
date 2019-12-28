@@ -5,6 +5,7 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
+import com.mertant.openinghours.routes.ApplicationRoutes
 
 import scala.util.Failure
 import scala.util.Success
@@ -28,16 +29,12 @@ object QuickstartApp {
         system.log.error("Failed to bind HTTP endpoint, terminating system", ex)
         system.terminate()
     }
-  }
+  }/**/
   //#start-http-server
   def main(args: Array[String]): Unit = {
     //#server-bootstrapping
     val rootBehavior = Behaviors.setup[Nothing] { context =>
-      val userRegistryActor = context.spawn(UserRegistry(), "UserRegistryActor")
-      context.watch(userRegistryActor)
-
-      val routes = new UserRoutes(userRegistryActor)(context.system)
-      startHttpServer(routes.userRoutes, context.system)
+      startHttpServer(ApplicationRoutes.allRoutes, context.system)
 
       Behaviors.empty
     }
