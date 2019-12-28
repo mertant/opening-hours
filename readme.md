@@ -8,3 +8,9 @@ Project seed: "Akka HTTP Quickstart Scala" downloaded from Lightbend: https://de
 Build tool & dependency management: SBT
 
 HTTP library: Akka HTTP
+
+
+### TODO
+
+- should not be able to create overlapping intervals.
+- enums instead of stringly typed.

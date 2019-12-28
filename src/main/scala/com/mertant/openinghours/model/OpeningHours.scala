@@ -1,6 +1,7 @@
 package com.mertant.openinghours.model
 
 import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
+import java.time.LocalTime
 
 case class OpeningHours(intervals: Seq[Interval]) {
   def humanReadableString: String = OpeningHours.toHumanReadableString(this)
@@ -16,8 +17,8 @@ object OpeningHours {
     }
 
     val timesAndTypes: Seq[(TimeOfWeek, TimeType)] = intervalsWithDays.map { case (ival, dayOfWeek) =>
-      val hours = ival.value / 60 / 60
-      (new TimeOfWeek(dayOfWeek, hours), TimeType.withName(ival.`type`))
+      val time = LocalTime.ofSecondOfDay(ival.value)
+      (TimeOfWeek(dayOfWeek, time), TimeType.withName(ival.`type`))
     }
 
     val openingTimes = timesAndTypes.zipWithIndex.filter { case ((_, timeType), _) => timeType == TimeType.open }
@@ -40,8 +41,8 @@ object OpeningHours {
     val dayStrings = dayNames.zipWithIndex.map { case (dayName, dayOfWeek) =>
       val intervalsForDay = openingHours.intervals.filter(_.start.dayOfWeek == dayOfWeek)
       val intervalStrings: Seq[String] = intervalsForDay.map { case Interval(start, end) =>
-        val startString = toAmPmString(start.hourOfDay)
-        val endString = toAmPmString(end.hourOfDay)
+        val startString = toAmPmString(start.time)
+        val endString = toAmPmString(end.time)
         s"$startString - $endString"
       }
       val intervalsString = if (intervalStrings.isEmpty) "Closed" else intervalStrings.mkString(intervalSeparator)
@@ -50,16 +51,26 @@ object OpeningHours {
     dayStrings.mkString(daySeparator)
   }
 
-  def toAmPmString(hour: Int): String = {
-    hour match {
-      case 12 =>
+  def toAmPmString(time: LocalTime): String = {
+    val hour: Int = time.getHour
+    val minute: Int = time.getMinute
+    // ignore seconds
+
+    (hour,minute) match {
+      case (12,0) =>
         "12 Noon"
-      case 0 =>
+      case (0,0) =>
         "12 Midnight"
-      case h if h < 12 =>
+      case (h,0) if h < 12 =>
         s"$h AM"
-      case h =>
+      case (h,m) if h < 12 =>
+        val mm = (if (minute > 10) "0" else "") + m
+        s"${h-12}:${mm} PM"
+      case (h,0) =>
         s"${h-12} PM"
+      case (h,m) =>
+        val mm = (if (minute > 10) "0" else "") + m
+        s"${h-12}:${mm} PM"
     }
   }
 }
@@ -77,7 +88,7 @@ object Interval {
   }
 }
 
-case class TimeOfWeek(dayOfWeek: Int, hourOfDay: Int)
+case class TimeOfWeek(dayOfWeek: Int, time: LocalTime)
 
 object TimeOfWeek {
   val dayMin = 0
@@ -86,16 +97,12 @@ object TimeOfWeek {
   val hourMin = 0
   val hourMax = 23
 
-  def apply(dayOfWeek: Int, hourOfDay: Int): TimeOfWeek = {
+  def apply(dayOfWeek: Int, time: LocalTime): TimeOfWeek = {
     if (dayOfWeek > dayMax || dayOfWeek < dayMin) {
       throw new IllegalArgumentException(s"Day must be between $dayMax and $dayMin but was $dayOfWeek")
     }
 
-    if (hourOfDay > hourMax || hourOfDay < hourMin) {
-      throw new IllegalArgumentException(s"Hour must be between $hourMin and $hourMax but was $hourOfDay")
-    }
-
-    new TimeOfWeek(dayOfWeek, hourOfDay)
+    new TimeOfWeek(dayOfWeek, time)
   }
 }
 
@@ -111,21 +118,6 @@ object WeekDay {
       throw new IllegalArgumentException(s"Day must be between $min and $max but was $value")
     }
     new WeekDay(value)
-  }
-}
-
-case class Hour(value: Int) {
-}
-
-object Hour {
-  val min = 0
-  val max = 23
-
-  def apply(value: Int): Hour = {
-    if (value > max || value < min) {
-      throw new IllegalArgumentException(s"Hour must be between $min and $max but was $value")
-    }
-    new Hour(value)
   }
 }
 
