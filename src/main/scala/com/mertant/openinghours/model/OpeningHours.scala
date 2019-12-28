@@ -15,15 +15,14 @@ object OpeningHours {
       ivals.map((_, index))
     }
 
-    val timesAndTypes: Seq[(TimeOfWeek, TimeType)] = intervalsWithDays.map { case (ival, index) =>
-      val dayOfWeek = index + 1
+    val timesAndTypes: Seq[(TimeOfWeek, TimeType)] = intervalsWithDays.map { case (ival, dayOfWeek) =>
       val hours = ival.value / 60 / 60
       (new TimeOfWeek(dayOfWeek, hours), TimeType.withName(ival.`type`))
     }
 
     val openingTimes = timesAndTypes.zipWithIndex.filter { case ((_, timeType), _) => timeType == TimeType.open }
     val intervals: Seq[Interval] = openingTimes.map { case ((start, _), index) =>
-      val (nextTime, nextType): (TimeOfWeek, TimeType) = timesAndTypes(index+1)
+      val (nextTime, nextType): (TimeOfWeek, TimeType) = timesAndTypes(index + 1)
       if (!nextType.eq(TimeType.close)) {
         throw new IllegalArgumentException("Each opening time should be immediately followed by a closing time")
       }
@@ -38,8 +37,7 @@ object OpeningHours {
 
   def toHumanReadableString(openingHours: OpeningHours): String = {
     val dayNames = Seq("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-    val dayStrings = dayNames.zipWithIndex.map { case (dayName, index) =>
-      val dayOfWeek: Int = index+1
+    val dayStrings = dayNames.zipWithIndex.map { case (dayName, dayOfWeek) =>
       val intervalsForDay = openingHours.intervals.filter(_.start.dayOfWeek == dayOfWeek)
       val intervalStrings: Seq[String] = intervalsForDay.map { case Interval(start, end) =>
         val startString = toAmPmString(start.hourOfDay)
@@ -82,8 +80,8 @@ object Interval {
 case class TimeOfWeek(dayOfWeek: Int, hourOfDay: Int)
 
 object TimeOfWeek {
-  val dayMin = 1
-  val dayMax = 7
+  val dayMin = 0
+  val dayMax = 6
 
   val hourMin = 0
   val hourMax = 23
@@ -105,8 +103,8 @@ case class WeekDay(value: Int) {
 }
 
 object WeekDay {
-  val min = 1
-  val max = 7
+  val min = 0
+  val max = 6
 
   def apply(value: Int): WeekDay = {
     if (value > max || value < min) {
