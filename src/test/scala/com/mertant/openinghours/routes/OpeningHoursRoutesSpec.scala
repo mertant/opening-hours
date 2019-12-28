@@ -4,7 +4,7 @@ import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.mertant.openinghours.JsonFormats
-import com.mertant.openinghours.dto.OpeningHoursDTO
+import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
@@ -13,6 +13,16 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
 
   import JsonFormats._
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+
+  val emptyDto: OpeningHoursDTO = OpeningHoursDTO(
+    monday = Seq.empty,
+    tuesday = Seq.empty,
+    wednesday = Seq.empty,
+    thursday = Seq.empty,
+    friday = Seq.empty,
+    saturday = Seq.empty,
+    sunday = Seq.empty
+  )
 
   "OpeningHoursRoutes" should {
     "return OK for GET" in {
@@ -24,17 +34,32 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
       }
     }
 
-    "return human readable hours for POST" in {
-      val dto = OpeningHoursDTO()
-      val userEntity = Marshal(dto).to[MessageEntity].futureValue
+    "return human readable text for empty object" in {
+      val dto = emptyDto
 
-      val request = Post("/hours").withEntity(userEntity)
-
-      request ~> routes ~> check {
+      postRequest(dto) ~> routes ~> check {
         status should ===(StatusCodes.OK)
         contentType should ===(ContentTypes.`text/plain(UTF-8)`)
         entityAs[String] should ===("""I am a human readable string of 0 opening hours""")
       }
     }
+
+    "return human readable text for object with one opening hour interval" in {
+      val openingTime: OpeningTimeDTO = OpeningTimeDTO("open", 32400)
+      val closingTime: OpeningTimeDTO = OpeningTimeDTO("close", 72000)
+      val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime))
+
+      postRequest(dto) ~> routes ~> check {
+        status should ===(StatusCodes.OK)
+        contentType should ===(ContentTypes.`text/plain(UTF-8)`)
+        entityAs[String] should ===("""I am a human readable string of 0 opening hours""")
+      }
+    }
+  }
+
+  private def postRequest(dto: OpeningHoursDTO): HttpRequest = {
+    val userEntity = Marshal(dto).to[MessageEntity].futureValue
+
+    Post("/hours").withEntity(userEntity)
   }
 }

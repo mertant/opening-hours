@@ -15,14 +15,38 @@ object OpeningHours {
 }
 
 
-case class Interval(start: TimeOfWeek, end: TimeOfWeek)
+case class Interval private (start: TimeOfWeek, end: TimeOfWeek) {
+}
 
 object Interval {
+  def apply(start: TimeOfWeek, end: TimeOfWeek): Interval = {
+    if (start.equals(end)) {
+      throw new IllegalArgumentException(s"Interval cannot start and end at the same moment in time")
+    }
+    new Interval(start, end)
+  }
 }
 
 case class TimeOfWeek(dayOfWeek: Int, hourOfDay: Int)
 
 object TimeOfWeek {
+  val dayMin = 1
+  val dayMax = 7
+
+  val hourMin = 0
+  val hourMax = 23
+
+  def apply(dayOfWeek: Int, hourOfDay: Int): TimeOfWeek = {
+    if (dayOfWeek > dayMax || dayOfWeek < dayMin) {
+      throw new IllegalArgumentException(s"Day must be between $dayMax and $dayMin but was $dayOfWeek")
+    }
+
+    if (hourOfDay > hourMax || hourOfDay < hourMin) {
+      throw new IllegalArgumentException(s"Hour must be between $hourMin and $hourMax but was $hourOfDay")
+    }
+
+    new TimeOfWeek(dayOfWeek, hourOfDay)
+  }
 }
 
 case class WeekDay(value: Int) {
@@ -34,10 +58,9 @@ object WeekDay {
 
   def apply(value: Int): WeekDay = {
     if (value > max || value < min) {
-      val msg = s"Day must be between $min and $max but was $value"
-      throw new IllegalArgumentException(msg)
+      throw new IllegalArgumentException(s"Day must be between $min and $max but was $value")
     }
-    WeekDay(value)
+    new WeekDay(value)
   }
 }
 
@@ -50,9 +73,8 @@ object Hour {
 
   def apply(value: Int): Hour = {
     if (value > max || value < min) {
-      val msg = s"Hour must be between $min and $max but was $value"
-      throw new IllegalArgumentException(msg)
+      throw new IllegalArgumentException(s"Hour must be between $min and $max but was $value")
     }
-    Hour(value)
+    new Hour(value)
   }
 }

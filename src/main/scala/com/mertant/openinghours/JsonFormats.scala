@@ -1,14 +1,14 @@
 package com.mertant.openinghours
 
-import com.mertant.openinghours.dto.{HumanReadableOpeningHours, OpeningHoursDTO}
+import com.mertant.openinghours.dto.{HumanReadableOpeningHours, OpeningHoursDTO, OpeningTimeDTO}
 import com.mertant.openinghours.model._
-
 import spray.json.DefaultJsonProtocol
 
 object JsonFormats  {
   import DefaultJsonProtocol._
 
-  implicit val openingHoursDTOFormat = jsonFormat0(OpeningHoursDTO)
+  implicit val openingTimeDTOFormat = jsonFormat2(OpeningTimeDTO)
+  implicit val openingHoursDTOFormat = jsonFormat7(OpeningHoursDTO)
   implicit val humanReadableOpeningHoursFormat = HumanReadableOpeningHours.format
 
   implicit val hourFormat = jsonFormat1(Hour.apply)
