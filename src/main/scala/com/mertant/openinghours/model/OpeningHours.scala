@@ -22,12 +22,20 @@ object OpeningHours {
     }
 
     val openingTimes = timesAndTypes.zipWithIndex.filter { case ((_, timeType), _) => timeType == TimeType.open }
+    if (openingTimes.size * 2 != timesAndTypes.size) {
+      throw new IllegalArgumentException("There should be an equal amount of opening and closing times")
+    }
+
     val intervals: Seq[Interval] = openingTimes.map { case ((start, _), index) =>
       val (nextTime, nextType): (TimeOfWeek, TimeType) = timesAndTypes(index + 1)
       if (!nextType.eq(TimeType.close)) {
         throw new IllegalArgumentException("Each opening time should be immediately followed by a closing time")
       }
       Interval(start, nextTime)
+    }
+
+    if (Interval.hasOverlaps(intervals)) {
+      throw new IllegalArgumentException("Opening periods should not overlap")
     }
 
     new OpeningHours(intervals)
@@ -86,9 +94,34 @@ object Interval {
     }
     new Interval(start, end)
   }
+
+  private def overlaps(a: Interval, b: Interval): Boolean = {
+    // Note: this only checks whether b starts and/or ends during a, not whether a starts or ends during b.
+    // This is okay because each interval gets its turn as a, so we don't do the same isDuring check twice.
+    a.equals(b) ||
+      (b.start.isDuring(a) || b.end.isDuring(a))
+  }
+
+  def hasOverlaps(intervals: Seq[Interval]): Boolean = {
+    val withIndex = intervals.zipWithIndex
+    withIndex.exists{ case (a,i) =>
+      withIndex.exists{ case (b,j) =>
+        i != j && overlaps(a,b)
+      }
+    }
+  }
 }
 
-case class TimeOfWeek(dayOfWeek: Int, time: LocalTime)
+case class TimeOfWeek(dayOfWeek: Int, time: LocalTime) {
+  def isDuring(interval: Interval): Boolean = {
+    this.isAfter(interval.start) && interval.end.isAfter(this)
+  }
+
+  def isAfter(that: TimeOfWeek): Boolean = {
+    (this.dayOfWeek == that.dayOfWeek && this.time.isAfter(that.time)) ||
+      this.dayOfWeek > that.dayOfWeek
+  }
+}
 
 object TimeOfWeek {
   val dayMin = 0

@@ -1,8 +1,10 @@
 package com.mertant.openinghours.routes
 
+import java.time.DateTimeException
+
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{as, complete, concat, entity, get, pathEnd, pathPrefix, post}
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.{ExceptionHandler, Route}
 import com.mertant.openinghours.JsonFormats
 import com.mertant.openinghours.dto.OpeningHoursDTO
 import com.mertant.openinghours.model.OpeningHours
@@ -30,4 +32,15 @@ class OpeningHoursRoutes {
         })
     }
   }
+
+  implicit def openingHoursExceptionHandler: ExceptionHandler =
+    ExceptionHandler {
+      case e: IllegalArgumentException =>
+        complete(StatusCodes.BadRequest, e)
+      case e: DateTimeException =>
+          complete(StatusCodes.BadRequest, e)
+      case e: Exception =>
+        complete(StatusCodes.InternalServerError, e)
+    }
+
 }
