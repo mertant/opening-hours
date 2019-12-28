@@ -40,19 +40,35 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
       postRequest(dto) ~> routes ~> check {
         status should ===(StatusCodes.OK)
         contentType should ===(ContentTypes.`text/plain(UTF-8)`)
-        entityAs[String] should ===("""I am a human readable string of 0 opening hours""")
+        val expected =
+          """Monday: Closed
+            |Tuesday: Closed
+            |Wednesday: Closed
+            |Thursday: Closed
+            |Friday: Closed
+            |Saturday: Closed
+            |Sunday: Closed""".stripMargin
+        entityAs[String] should ===(expected)
       }
     }
 
     "return human readable text for object with one opening hour interval" in {
       val openingTime: OpeningTimeDTO = OpeningTimeDTO("open", 32400)
       val closingTime: OpeningTimeDTO = OpeningTimeDTO("close", 72000)
-      val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime))
+      val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime, closingTime))
 
       postRequest(dto) ~> routes ~> check {
         status should ===(StatusCodes.OK)
         contentType should ===(ContentTypes.`text/plain(UTF-8)`)
-        entityAs[String] should ===("""I am a human readable string of 0 opening hours""")
+        val expected =
+          """Monday: 9 AM - 8 PM
+            |Tuesday: Closed
+            |Wednesday: Closed
+            |Thursday: Closed
+            |Friday: Closed
+            |Saturday: Closed
+            |Sunday: Closed""".stripMargin
+        entityAs[String] should ===(expected)
       }
     }
   }

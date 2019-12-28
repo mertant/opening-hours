@@ -1,10 +1,10 @@
 package com.mertant.openinghours.routes
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directives.{as, complete, concat, entity, get, pathPrefix, pathEnd, post}
+import akka.http.scaladsl.server.Directives.{as, complete, concat, entity, get, pathEnd, pathPrefix, post}
 import akka.http.scaladsl.server.Route
 import com.mertant.openinghours.JsonFormats
-import com.mertant.openinghours.dto.{HumanReadableOpeningHours, OpeningHoursDTO}
+import com.mertant.openinghours.dto.OpeningHoursDTO
 import com.mertant.openinghours.model.OpeningHours
 
 class OpeningHoursRoutes {

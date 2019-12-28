@@ -13,6 +13,8 @@ case class OpeningHoursDTO(monday: Seq[OpeningTimeDTO],
 /*
  * TODO: add a JSON format for enums (apparently Spray JSON doesn't provide one by default); change `type` into an enum (open/close)
  */
-case class OpeningTimeDTO(`type`: String, value: Int) {
+case class OpeningTimeDTO(`type`: String, // 'open' or 'close'
+                          value: Int // time of day in seconds
+                         ) {
 
 }

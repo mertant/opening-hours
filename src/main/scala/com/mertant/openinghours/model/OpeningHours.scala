@@ -1,16 +1,68 @@
 package com.mertant.openinghours.model
 
-import com.mertant.openinghours.dto.OpeningHoursDTO
+import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
 
 case class OpeningHours(intervals: Seq[Interval]) {
-  def humanReadableString: String = {
-    s"I am a human readable string of ${intervals.size} opening hours"
-  }
+  def humanReadableString: String = OpeningHours.toHumanReadableString(this)
 }
 
 object OpeningHours {
+  import com.mertant.openinghours.model.TimeType.TimeType
+
   def fromDto(dto: OpeningHoursDTO): OpeningHours = {
-    new OpeningHours(Seq.empty)
+    val days = Seq(dto.monday, dto.tuesday, dto.wednesday, dto.thursday, dto.friday, dto.saturday, dto.sunday)
+    val intervalsWithDays: Seq[(OpeningTimeDTO, Int)] = days.zipWithIndex.flatMap { case (ivals, index) =>
+      ivals.map((_, index))
+    }
+
+    val timesAndTypes: Seq[(TimeOfWeek, TimeType)] = intervalsWithDays.map { case (ival, index) =>
+      val dayOfWeek = index + 1
+      val hours = ival.value / 60 / 60
+      (new TimeOfWeek(dayOfWeek, hours), TimeType.withName(ival.`type`))
+    }
+
+    val openingTimes = timesAndTypes.zipWithIndex.filter { case ((_, timeType), _) => timeType == TimeType.open }
+    val intervals: Seq[Interval] = openingTimes.map { case ((start, _), index) =>
+      val (nextTime, nextType): (TimeOfWeek, TimeType) = timesAndTypes(index+1)
+      if (!nextType.eq(TimeType.close)) {
+        throw new IllegalArgumentException("Each opening time should be immediately followed by a closing time")
+      }
+      Interval(start, nextTime)
+    }
+
+    new OpeningHours(intervals)
+  }
+
+  private val intervalSeparator = ", "
+  private val daySeparator: String = "\n"
+
+  def toHumanReadableString(openingHours: OpeningHours): String = {
+    val dayNames = Seq("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+    val dayStrings = dayNames.zipWithIndex.map { case (dayName, index) =>
+      val dayOfWeek: Int = index+1
+      val intervalsForDay = openingHours.intervals.filter(_.start.dayOfWeek == dayOfWeek)
+      val intervalStrings: Seq[String] = intervalsForDay.map { case Interval(start, end) =>
+        val startString = toAmPmString(start.hourOfDay)
+        val endString = toAmPmString(end.hourOfDay)
+        s"$startString - $endString"
+      }
+      val intervalsString = if (intervalStrings.isEmpty) "Closed" else intervalStrings.mkString(intervalSeparator)
+      s"$dayName: $intervalsString"
+    }
+    dayStrings.mkString(daySeparator)
+  }
+
+  def toAmPmString(hour: Int): String = {
+    hour match {
+      case 12 =>
+        "12 Noon"
+      case 0 =>
+        "12 Midnight"
+      case h if h < 12 =>
+        s"$h AM"
+      case h =>
+        s"${h-12} PM"
+    }
   }
 }
 
@@ -77,4 +129,9 @@ object Hour {
     }
     new Hour(value)
   }
+}
+
+object TimeType extends Enumeration {
+  type TimeType = Value
+  val open, close = Value
 }
