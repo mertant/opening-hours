@@ -114,7 +114,8 @@ SELECT * FROM interval WHERE
 
 The performance of the query could potentially be increased by indexing the intervals by their start time.
 
-Finally, when we serialize this format into JSON, we save space as we do not need to store the names of weekdays,
+Finally, when we serialize this format into JSON, we save space as we do not need to store the names of weekdays
+(including empty weekdays without any openings),
 or the redundant information about the "type of time" (open/close).
 
 In summary, the benefits of the proposed data structure:
