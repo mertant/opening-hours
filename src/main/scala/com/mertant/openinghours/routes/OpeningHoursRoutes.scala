@@ -22,7 +22,7 @@ class OpeningHoursRoutes {
     pathEnd {
       concat(
         get {
-          complete(StatusCodes.OK)
+          complete(StatusCodes.OK, "Hello world!")
         },
         post {
           entity(as[OpeningHoursDTO]) { openingHoursDTO =>

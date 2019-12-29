@@ -84,21 +84,19 @@ object OpeningHours {
     val minute: Int = time.getMinute
     // ignore seconds
 
-    (hour,minute) match {
-      case (12,0) =>
-        "12 Noon"
-      case (0,0) =>
-        "12 Midnight"
-      case (h,0) if h < 12 =>
-        s"$h AM"
-      case (h,m) if h < 12 =>
-        val mm = (if (minute > 10) "0" else "") + m
-        s"${h-12}:${mm} PM"
-      case (h,0) =>
-        s"${h-12} PM"
-      case (h,m) =>
-        val mm = (if (minute > 10) "0" else "") + m
-        s"${h-12}:${mm} PM"
+    val hourPart = if (hour > 12) hour-12 else hour
+
+    val minutePart = minute match {
+      case 0 =>
+        ""
+      case m if m < 10 =>
+        s":0$m"
+      case m =>
+        s":$m"
     }
+
+    val suffix = if (hour < 12) "AM" else "PM"
+
+    s"$hourPart$minutePart $suffix"
   }
 }

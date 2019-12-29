@@ -75,10 +75,12 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "return text for object with several openings" in {
-      val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  32400)
+      val openingTime1: OpeningTimeDTO = OpeningTimeDTO(open,  32400)
       val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 72000)
-      val times = Seq(openingTime, closingTime)
-      val dto: OpeningHoursDTO = emptyDto.copy(monday = times, tuesday = times, sunday = times)
+      val times1 = Seq(openingTime1, closingTime)
+      val openingTime2: OpeningTimeDTO = OpeningTimeDTO(open,  43200)
+      val times2 = Seq(openingTime2, closingTime)
+      val dto: OpeningHoursDTO = emptyDto.copy(monday = times1, tuesday = times1, sunday = times2)
 
       postRequest(dto) ~> routes ~> check {
         status should ===(StatusCodes.OK)
@@ -90,7 +92,7 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
             |Thursday: Closed
             |Friday: Closed
             |Saturday: Closed
-            |Sunday: 9 AM - 8 PM""".stripMargin
+            |Sunday: 12 PM - 8 PM""".stripMargin
         entityAs[String] should ===(expected)
       }
     }
