@@ -28,7 +28,7 @@ object OpeningHours {
 
     val timesAndTypes: Seq[(TimeOfWeek, TimeType)] = intervalsWithDays.map { case (ival, dayOfWeek) =>
       val time = LocalTime.ofSecondOfDay(ival.value)
-      (TimeOfWeek(dayOfWeek, time), TimeType.withName(ival.`type`))
+      (TimeOfWeek(dayOfWeek, time), ival.`type`)
     }
 
     val openingTimes = timesAndTypes.zipWithIndex.filter { case ((_, timeType), _) => timeType == TimeType.open }
