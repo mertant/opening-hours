@@ -34,7 +34,16 @@ object OpeningHours {
       Interval(start, nextTime)
     }
 
-    if (Interval.hasOverlaps(intervals)) {
+    val hasOverlaps = intervals.sliding(2).exists{ seqOf2 =>
+      val (first, second) =  if (seqOf2.size < 2) {
+        (seqOf2(0), intervals.head) // if the last element, compare it against the first one of the week
+      } else {
+        (seqOf2(0), seqOf2(1))
+      }
+      val isDuplicate = intervals.size > 1 && first == second
+      isDuplicate || second.start.isDuring(first) || first.end.isDuring(second)
+    }
+    if (hasOverlaps) {
       throw new IllegalArgumentException("Opening periods should not overlap")
     }
 
@@ -93,22 +102,6 @@ object Interval {
       throw new IllegalArgumentException(s"Interval cannot start and end at the same moment in time")
     }
     new Interval(start, end)
-  }
-
-  private def overlaps(a: Interval, b: Interval): Boolean = {
-    // Note: this only checks whether b starts and/or ends during a, not whether a starts or ends during b.
-    // This is okay because each interval gets its turn as a, so we don't do the same isDuring check twice.
-    a.equals(b) ||
-      (b.start.isDuring(a) || b.end.isDuring(a))
-  }
-
-  def hasOverlaps(intervals: Seq[Interval]): Boolean = {
-    val withIndex = intervals.zipWithIndex
-    withIndex.exists{ case (a,i) =>
-      withIndex.exists{ case (b,j) =>
-        i != j && overlaps(a,b)
-      }
-    }
   }
 }
 
