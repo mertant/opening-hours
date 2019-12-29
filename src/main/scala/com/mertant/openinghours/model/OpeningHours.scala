@@ -2,14 +2,13 @@ package com.mertant.openinghours.model
 
 import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
 import java.time.LocalTime
-import scala.util.Try
+import com.mertant.openinghours.model.TimeType.TimeType
 
 case class OpeningHours(intervals: Seq[Interval]) {
   def humanReadableString: String = OpeningHours.toHumanReadableString(this)
 }
 
 object OpeningHours {
-  import com.mertant.openinghours.model.TimeType.TimeType
 
   def fromDto(dto: OpeningHoursDTO): OpeningHours = {
     val days: Seq[Seq[OpeningTimeDTO]] = Seq(dto.monday, dto.tuesday, dto.wednesday, dto.thursday, dto.friday, dto.saturday, dto.sunday)
@@ -102,56 +101,4 @@ object OpeningHours {
         s"${h-12}:${mm} PM"
     }
   }
-}
-
-
-case class Interval private (start: TimeOfWeek, end: TimeOfWeek) {
-}
-
-object Interval {
-  def apply(start: TimeOfWeek, end: TimeOfWeek): Interval = {
-    if (start.equals(end)) {
-      throw new IllegalArgumentException(s"Interval cannot start and end at the same moment in time")
-    }
-    new Interval(start, end)
-  }
-}
-
-case class TimeOfWeek(weekDay: WeekDay.Value, time: LocalTime) {
-  def isDuring(interval: Interval): Boolean = {
-    this.isAfter(interval.start) && interval.end.isAfter(this)
-  }
-
-  def isAfter(that: TimeOfWeek): Boolean = {
-    (this.weekDay == that.weekDay && this.time.isAfter(that.time)) ||
-      this.weekDay.id > that.weekDay.id
-  }
-}
-
-object TimeOfWeek {
-  def apply(dayOfWeekIndex: Int, time: LocalTime): TimeOfWeek = {
-    val weekDay = WeekDay.of(dayOfWeekIndex)
-    new TimeOfWeek(weekDay, time)
-  }
-}
-
-object WeekDay extends Enumeration {
-  type WeekDay = Value
-  val monday    = Value(0, "Monday")
-  val tuesday   = Value(1, "Tuesday")
-  val wednesday = Value(2, "Wednesday")
-  val thursday  = Value(3, "Thursday")
-  val friday    = Value(4, "Friday")
-  val saturday  = Value(5, "Saturday")
-  val sunday    = Value(6, "Sunday")
-
-  def of(value: Int): Value = {
-    Try(WeekDay.apply(value)).getOrElse(
-      throw new IllegalArgumentException(s"Day must be between 0 and ${this.values.size-1} but was $value)"))
-  }
-}
-
-object TimeType extends Enumeration {
-  type TimeType = Value
-  val open, close = Value
 }
