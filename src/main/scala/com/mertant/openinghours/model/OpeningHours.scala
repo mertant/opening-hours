@@ -2,6 +2,7 @@ package com.mertant.openinghours.model
 
 import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
 import java.time.LocalTime
+import scala.util.Try
 
 case class OpeningHours(intervals: Seq[Interval]) {
   def humanReadableString: String = OpeningHours.toHumanReadableString(this)
@@ -60,20 +61,23 @@ object OpeningHours {
 
   private val intervalSeparator = ", "
   private val daySeparator: String = "\n"
-  private val dayNames = Seq("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
   def toHumanReadableString(openingHours: OpeningHours): String = {
-    val dayStrings = dayNames.zipWithIndex.map { case (dayName, dayOfWeek) =>
-      val intervalsForDay = openingHours.intervals.filter(_.start.dayOfWeek == dayOfWeek)
-      val intervalStrings: Seq[String] = intervalsForDay.map { case Interval(start, end) =>
-        val startString = toAmPmString(start.time)
-        val endString = toAmPmString(end.time)
-        s"$startString - $endString"
-      }
+    val dayStrings = WeekDay.values.toSeq.map { weekDay: WeekDay.Value =>
+      val intervalsForDay: Seq[Interval] = openingHours.intervals.filter(_.start.weekDay == weekDay)
+      val intervalStrings: Seq[String] = intervalsToStrings(intervalsForDay)
       val intervalsString = if (intervalStrings.isEmpty) "Closed" else intervalStrings.mkString(intervalSeparator)
-      s"$dayName: $intervalsString"
+      s"$weekDay: $intervalsString"
     }
     dayStrings.mkString(daySeparator)
+  }
+
+  private def intervalsToStrings(intervals: Seq[Interval]): Seq[String] = {
+    val intervalStrings: Seq[String] = intervals.map { case Interval(start, end) =>
+      val endString = toAmPmString(end.time)
+      s"${toAmPmString(start.time)} - $endString"
+    }
+    intervalStrings
   }
 
   def toAmPmString(time: LocalTime): String = {
@@ -113,45 +117,37 @@ object Interval {
   }
 }
 
-case class TimeOfWeek(dayOfWeek: Int, time: LocalTime) {
+case class TimeOfWeek(weekDay: WeekDay.Value, time: LocalTime) {
   def isDuring(interval: Interval): Boolean = {
     this.isAfter(interval.start) && interval.end.isAfter(this)
   }
 
   def isAfter(that: TimeOfWeek): Boolean = {
-    (this.dayOfWeek == that.dayOfWeek && this.time.isAfter(that.time)) ||
-      this.dayOfWeek > that.dayOfWeek
+    (this.weekDay == that.weekDay && this.time.isAfter(that.time)) ||
+      this.weekDay.id > that.weekDay.id
   }
 }
 
 object TimeOfWeek {
-  val dayMin = 0
-  val dayMax = 6
-
-  val hourMin = 0
-  val hourMax = 23
-
-  def apply(dayOfWeek: Int, time: LocalTime): TimeOfWeek = {
-    if (dayOfWeek > dayMax || dayOfWeek < dayMin) {
-      throw new IllegalArgumentException(s"Day must be between $dayMax and $dayMin but was $dayOfWeek")
-    }
-
-    new TimeOfWeek(dayOfWeek, time)
+  def apply(dayOfWeekIndex: Int, time: LocalTime): TimeOfWeek = {
+    val weekDay = WeekDay.of(dayOfWeekIndex)
+    new TimeOfWeek(weekDay, time)
   }
 }
 
-case class WeekDay(value: Int) {
-}
+object WeekDay extends Enumeration {
+  type WeekDay = Value
+  val monday    = Value(0, "Monday")
+  val tuesday   = Value(1, "Tuesday")
+  val wednesday = Value(2, "Wednesday")
+  val thursday  = Value(3, "Thursday")
+  val friday    = Value(4, "Friday")
+  val saturday  = Value(5, "Saturday")
+  val sunday    = Value(6, "Sunday")
 
-object WeekDay {
-  val min = 0
-  val max = 6
-
-  def apply(value: Int): WeekDay = {
-    if (value > max || value < min) {
-      throw new IllegalArgumentException(s"Day must be between $min and $max but was $value")
-    }
-    new WeekDay(value)
+  def of(value: Int): Value = {
+    Try(WeekDay.apply(value)).getOrElse(
+      throw new IllegalArgumentException(s"Day must be between 0 and ${this.values.size-1} but was $value)"))
   }
 }
 
