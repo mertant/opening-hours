@@ -1,9 +1,8 @@
 package com.mertant.openinghours.routes
 
-import com.mertant.openinghours.model.TimeType.{open, close}
+import com.mertant.openinghours.model.TimeType.{close, open}
 import com.mertant.openinghours.JsonFormats
 import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
-
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
@@ -11,7 +10,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
 class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures with ScalatestRouteTest {
-  lazy val routes = new OpeningHoursRoutes().routes
+  lazy val routes = new OpeningHoursRoutes(system).routes
 
   import JsonFormats._
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -123,7 +122,7 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime, closingTime))
 
       postRequest(dto) ~> routes ~> check {
-        status should ===(StatusCodes.InternalServerError)
+        status should ===(StatusCodes.BadRequest)
       }
     }
 
@@ -133,7 +132,7 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime), tuesday = Seq(openingTime, closingTime))
 
       postRequest(dto) ~> routes ~> check {
-        status should ===(StatusCodes.InternalServerError)
+        status should ===(StatusCodes.BadRequest)
       }
     }
 
@@ -143,7 +142,7 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(closingTime), tuesday = Seq(openingTime, closingTime))
 
       postRequest(dto) ~> routes ~> check {
-        status should ===(StatusCodes.InternalServerError)
+        status should ===(StatusCodes.BadRequest)
       }
     }
 
@@ -155,7 +154,7 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime1, closingTime1, openingTime2, closingTime2))
 
       postRequest(dto) ~> routes ~> check {
-        status should ===(StatusCodes.InternalServerError)
+        status should ===(StatusCodes.BadRequest)
       }
     }
 
@@ -167,7 +166,7 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime1, openingTime2, closingTime1, closingTime2))
 
       postRequest(dto) ~> routes ~> check {
-        status should ===(StatusCodes.InternalServerError)
+        status should ===(StatusCodes.BadRequest)
       }
     }
 
@@ -177,7 +176,7 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime, closingTime, openingTime, closingTime))
 
       postRequest(dto) ~> routes ~> check {
-        status should ===(StatusCodes.InternalServerError)
+        status should ===(StatusCodes.BadRequest)
       }
     }
   }

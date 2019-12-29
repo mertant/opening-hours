@@ -1,14 +1,16 @@
 package com.mertant.openinghours.routes
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Directives.{concat, pathPrefix}
 import akka.http.scaladsl.server.Route
 
 object ApplicationRoutes {
-    val hoursRoute: OpeningHoursRoutes = new OpeningHoursRoutes()
+    def createRoutes(system: ActorSystem): Route = {
+      val hoursRoute: OpeningHoursRoutes = new OpeningHoursRoutes(system)
 
-    val allRoutes: Route = {
-     concat({
-       hoursRoute.routes
-     })
+      concat({
+        hoursRoute.routes
+      })
+
     }
 }

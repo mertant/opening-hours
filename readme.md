@@ -46,13 +46,14 @@ Saturday: 10 AM - 1 AM
 Sunday: 12 PM - 9 PM
 ````
 
-Make an invalid POST request that returns 500 Internal Server Error:
+Make an invalid POST request that returns 400 Bad Request:
 
 ``curl http://localhost:8080/hours -H "Content-Type: application/json" --data @examples/brokeninput1.json``
 
 
 ### TODO
 
+- write notes on data format
 - create zip & test usage guide
 
 

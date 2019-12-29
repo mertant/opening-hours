@@ -11,7 +11,6 @@ object JsonFormats  {
   import DefaultJsonProtocol._
 
   implicit object TimeTypeFormat extends JsonFormat[TimeType] {
-    private val exception = DeserializationException("Not a valid TimeType")
 
     def write(obj: TimeType): JsValue = {
       JsString(obj.toString)
@@ -19,9 +18,9 @@ object JsonFormats  {
 
     def read(json: JsValue): TimeType = json match {
       case JsString(str) =>
-        Try(TimeType.withName(str)).getOrElse(throw exception)
-      case _ =>
-        throw exception
+        Try(TimeType.withName(str)).getOrElse(throw new IllegalArgumentException("Not a valid TimeType: " + str))
+      case v: JsValue =>
+        throw DeserializationException("Malformed TimeType: " + v.toString())
     }
   }
 

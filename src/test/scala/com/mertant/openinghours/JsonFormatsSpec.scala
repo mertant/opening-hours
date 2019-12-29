@@ -1,6 +1,6 @@
 package com.mertant.openinghours
 
-import com.mertant.openinghours.model.TimeType.{open, close}
+import com.mertant.openinghours.model.TimeType.{close, open}
 import com.mertant.openinghours.JsonFormats._
 import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
 import com.mertant.openinghours.model.TimeType
@@ -33,7 +33,7 @@ class JsonFormatsSpec extends WordSpec with Matchers {
     }
 
     "require correct TimeType" in {
-      an [DeserializationException] should be thrownBy openingHoursDTOFormat.read(invalidTimeTypeJsonString.parseJson)
+      an [IllegalArgumentException] should be thrownBy openingHoursDTOFormat.read(invalidTimeTypeJsonString.parseJson)
     }
 
     "be able to write" in {
@@ -55,7 +55,8 @@ class JsonFormatsSpec extends WordSpec with Matchers {
     }
 
     "throw error with invalid type" in {
-      an [DeserializationException] should be thrownBy TimeTypeFormat.read("\"hamburger\"".parseJson)
+      an [IllegalArgumentException] should be thrownBy TimeTypeFormat.read("\"hamburger\"".parseJson)
+      an [DeserializationException] should be thrownBy TimeTypeFormat.read("{ \"close\": true }".parseJson)
     }
   }
 }

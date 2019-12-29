@@ -2,14 +2,15 @@ package com.mertant.openinghours.routes
 
 import java.time.DateTimeException
 
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directives.{as, complete, concat, entity, get, pathEnd, pathPrefix, post}
-import akka.http.scaladsl.server.{ExceptionHandler, Route}
-import com.mertant.openinghours.JsonFormats
+import akka.actor.ActorSystem
+import akka.http.scaladsl.model.{StatusCode, StatusCodes}
+import akka.http.scaladsl.server.Directives.{as, complete, concat, entity, get, handleExceptions, pathEnd, pathPrefix, post}
+import akka.http.scaladsl.server.{ExceptionHandler, Route, StandardRoute}
+import com.mertant.openinghours.{JsonFormats, Logging}
 import com.mertant.openinghours.dto.OpeningHoursDTO
 import com.mertant.openinghours.model.OpeningHours
 
-class OpeningHoursRoutes {
+class OpeningHoursRoutes(val system: ActorSystem) extends Logging {
   import JsonFormats._
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
@@ -18,29 +19,49 @@ class OpeningHoursRoutes {
     model.humanReadableString
   }
 
-  val routes: Route = pathPrefix("hours") {
-    pathEnd {
-      concat(
-        get {
-          complete(StatusCodes.OK, "Hello world!")
-        },
-        post {
-          entity(as[OpeningHoursDTO]) { openingHoursDTO =>
-            val result: String = getHumanReadableOpeningHours(openingHoursDTO)
-            complete(StatusCodes.OK, result)
-          }
-        })
+  val routes: Route =
+    pathPrefix("hours") {
+      handleExceptions(openingHoursExceptionHandler) {
+        log.info("/hours called")
+        pathEnd {
+          concat(
+            get {
+              logAndRespond("Hello world!")
+            },
+            post {
+              entity(as[OpeningHoursDTO]) { openingHoursDTO =>
+                val result: String = getHumanReadableOpeningHours(openingHoursDTO)
+                logAndRespond(result)
+              }
+            })
+        }
+      }
     }
+
+  private def logAndRespond(responseString: String): StandardRoute = {
+    logAndRespond(responseString, StatusCodes.OK)
+  }
+  private def logAndRespond(responseString: String, status: StatusCode): StandardRoute = {
+    log.info("/hours call resulted in success: " + responseString)
+    complete(status, responseString)
+  }
+
+  private def logAndRespond(t: Throwable): StandardRoute = {
+    logAndRespond(t, StatusCodes.InternalServerError)
+  }
+  private def logAndRespond(t: Throwable, status: StatusCode): StandardRoute = {
+    log.error("/hours call resulted in exception: " + t)
+    complete(status, t.toString)
   }
 
   implicit def openingHoursExceptionHandler: ExceptionHandler =
     ExceptionHandler {
       case e: IllegalArgumentException =>
-        complete(StatusCodes.BadRequest, e)
+        logAndRespond(e, StatusCodes.BadRequest)
       case e: DateTimeException =>
-          complete(StatusCodes.BadRequest, e)
-      case e: Exception =>
-        complete(StatusCodes.InternalServerError, e)
+        logAndRespond(e, StatusCodes.BadRequest)
+      case t: Throwable =>
+        logAndRespond(t)
     }
 
 }

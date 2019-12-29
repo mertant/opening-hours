@@ -4,6 +4,10 @@
     {
       "type": "open",
       "value": 36000
+    },
+    {
+      "type": "hamburger",
+      "value": 40000
     }
   ],
   "wednesday": [],

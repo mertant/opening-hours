@@ -15,7 +15,7 @@ object OpeningHours {
     val intervals: Seq[Interval] = dayOpeningHoursToIntervals(days)
 
     if (hasOverlaps(intervals)) {
-      throw new IllegalArgumentException("Opening periods should not overlap")
+      throw new IllegalArgumentException("Opening periods should not overlap.")
     }
 
     new OpeningHours(intervals)
@@ -33,13 +33,13 @@ object OpeningHours {
 
     val openingTimes = timesAndTypes.zipWithIndex.filter { case ((_, timeType), _) => timeType == TimeType.open }
     if (openingTimes.size * 2 != timesAndTypes.size) {
-      throw new IllegalArgumentException("There should be an equal amount of opening and closing times")
+      throw new IllegalArgumentException("There should be an equal amount of opening and closing times.")
     }
 
     openingTimes.map { case ((start, _), index) =>
       val (nextTime, nextType): (TimeOfWeek, TimeType) = timesAndTypes(index + 1)
       if (!nextType.eq(TimeType.close)) {
-        throw new IllegalArgumentException("Each opening time should be immediately followed by a closing time")
+        throw new IllegalArgumentException("Each opening time should be immediately followed by a closing time.")
       }
       Interval(start, nextTime)
     }
