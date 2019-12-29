@@ -179,6 +179,16 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
         status should ===(StatusCodes.BadRequest)
       }
     }
+
+    "fail when secondOfDay is above max value (86399 = 11.59:59 PM)" in {
+      val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  32400)
+      val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 86400)
+      val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime, closingTime))
+
+      postRequest(dto) ~> routes ~> check {
+        status should ===(StatusCodes.BadRequest)
+      }
+    }
   }
 
   private def postRequest(dto: OpeningHoursDTO): HttpRequest = {
