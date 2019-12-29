@@ -2,7 +2,6 @@ package com.mertant.openinghours
 
 import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
 import com.mertant.openinghours.model.TimeType
-import com.mertant.openinghours.model.TimeType.TimeType
 import spray.json.{DefaultJsonProtocol, DeserializationException, JsString, JsValue, JsonFormat}
 
 import scala.util.Try
@@ -10,19 +9,24 @@ import scala.util.Try
 object JsonFormats  {
   import DefaultJsonProtocol._
 
-  implicit object TimeTypeFormat extends JsonFormat[TimeType] {
+  // It seems that spray-json does not provide an Enumeration parser by default, so we need to create one.
+  class EnumFormat[A <: Enumeration](a: A) extends JsonFormat[A#Value] {
+    private val enumTypeName = a.getClass.getSimpleName
 
-    def write(obj: TimeType): JsValue = {
+    def write(obj: A#Value): JsValue = {
       JsString(obj.toString)
     }
 
-    def read(json: JsValue): TimeType = json match {
+    def read(json: JsValue): A#Value = json match {
       case JsString(str) =>
-        Try(TimeType.withName(str)).getOrElse(throw new IllegalArgumentException("Not a valid TimeType: " + str))
+        Try(a.withName(str)).getOrElse(
+          throw new IllegalArgumentException(s"Not a valid $enumTypeName value: $str. Valid values are: ${a.values.toSeq.mkString(", ")}"))
       case v: JsValue =>
-        throw DeserializationException("Malformed TimeType: " + v.toString())
+        throw DeserializationException(s"Malformed $enumTypeName: $v")
     }
   }
+
+  implicit val TimeTypeFormat = new EnumFormat(TimeType)
 
   implicit val openingTimeDTOFormat = jsonFormat2(OpeningTimeDTO)
   implicit val openingHoursDTOFormat = jsonFormat7(OpeningHoursDTO)
