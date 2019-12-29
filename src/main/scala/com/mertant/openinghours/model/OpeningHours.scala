@@ -11,7 +11,17 @@ object OpeningHours {
   import com.mertant.openinghours.model.TimeType.TimeType
 
   def fromDto(dto: OpeningHoursDTO): OpeningHours = {
-    val days = Seq(dto.monday, dto.tuesday, dto.wednesday, dto.thursday, dto.friday, dto.saturday, dto.sunday)
+    val days: Seq[Seq[OpeningTimeDTO]] = Seq(dto.monday, dto.tuesday, dto.wednesday, dto.thursday, dto.friday, dto.saturday, dto.sunday)
+    val intervals: Seq[Interval] = dayOpeningHoursToIntervals(days)
+
+    if (hasOverlaps(intervals)) {
+      throw new IllegalArgumentException("Opening periods should not overlap")
+    }
+
+    new OpeningHours(intervals)
+  }
+
+  private def dayOpeningHoursToIntervals(days: Seq[Seq[OpeningTimeDTO]]): Seq[Interval] = {
     val intervalsWithDays: Seq[(OpeningTimeDTO, Int)] = days.zipWithIndex.flatMap { case (ivals, index) =>
       ivals.map((_, index))
     }
@@ -26,35 +36,33 @@ object OpeningHours {
       throw new IllegalArgumentException("There should be an equal amount of opening and closing times")
     }
 
-    val intervals: Seq[Interval] = openingTimes.map { case ((start, _), index) =>
+    openingTimes.map { case ((start, _), index) =>
       val (nextTime, nextType): (TimeOfWeek, TimeType) = timesAndTypes(index + 1)
       if (!nextType.eq(TimeType.close)) {
         throw new IllegalArgumentException("Each opening time should be immediately followed by a closing time")
       }
       Interval(start, nextTime)
     }
+  }
 
-    val hasOverlaps = intervals.sliding(2).exists{ seqOf2 =>
-      val (first, second) =  if (seqOf2.size < 2) {
-        (seqOf2(0), intervals.head) // if the last element, compare it against the first one of the week
-      } else {
-        (seqOf2(0), seqOf2(1))
-      }
+  private def hasOverlaps(intervals: Seq[Interval]): Boolean = {
+    intervals.sliding(2).exists { seqOf2 =>
+      val (first, second) =
+        if (seqOf2.size < 2) {
+          (seqOf2(0), intervals.head) // if the last element, compare it against the first one of the week
+        } else {
+          (seqOf2(0), seqOf2(1))
+        }
       val isDuplicate = intervals.size > 1 && first == second
       isDuplicate || second.start.isDuring(first) || first.end.isDuring(second)
     }
-    if (hasOverlaps) {
-      throw new IllegalArgumentException("Opening periods should not overlap")
-    }
-
-    new OpeningHours(intervals)
   }
 
   private val intervalSeparator = ", "
   private val daySeparator: String = "\n"
+  private val dayNames = Seq("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
   def toHumanReadableString(openingHours: OpeningHours): String = {
-    val dayNames = Seq("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
     val dayStrings = dayNames.zipWithIndex.map { case (dayName, dayOfWeek) =>
       val intervalsForDay = openingHours.intervals.filter(_.start.dayOfWeek == dayOfWeek)
       val intervalStrings: Seq[String] = intervalsForDay.map { case Interval(start, end) =>
