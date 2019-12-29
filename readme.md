@@ -9,8 +9,8 @@ Build tool & dependency management: SBT
 
 HTTP library: Akka HTTP
 
+JSON library: spray-json (via akka-http-spray-json)
 
 ### TODO
 
-- should not be able to create overlapping intervals.
-- enums instead of stringly typed.
+- create client/usage guide
