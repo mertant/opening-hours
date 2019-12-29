@@ -9,7 +9,6 @@ case class OpeningHours(intervals: Seq[Interval]) {
 }
 
 object OpeningHours {
-
   def fromDto(dto: OpeningHoursDTO): OpeningHours = {
     val days: Seq[Seq[OpeningTimeDTO]] = Seq(dto.monday, dto.tuesday, dto.wednesday, dto.thursday, dto.friday, dto.saturday, dto.sunday)
     val intervals: Seq[Interval] = dayOpeningHoursToIntervals(days)

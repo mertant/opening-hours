@@ -11,6 +11,5 @@ object ApplicationRoutes {
       concat({
         hoursRoute.routes
       })
-
     }
 }

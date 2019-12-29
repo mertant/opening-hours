@@ -29,7 +29,7 @@ object QuickstartApp {
         system.log.error("Failed to bind HTTP endpoint, terminating system", ex)
         system.terminate()
     }
-  }/**/
+  }
   //#start-http-server
   def main(args: Array[String]): Unit = {
     //#server-bootstrapping
