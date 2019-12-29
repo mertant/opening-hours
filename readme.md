@@ -1,6 +1,6 @@
-# "Opening Hours" task
+# "Opening Hours" exercise
 
-## 1. Coding task: HTTP API
+## 1. HTTP API
 
 ### Tech used
 
