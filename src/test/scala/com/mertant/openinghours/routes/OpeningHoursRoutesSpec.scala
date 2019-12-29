@@ -116,6 +116,26 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
       }
     }
 
+    "return text for object with an opening that crosses over into the next week (Sun-Mon)" in {
+      val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  72000)
+      val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 7200)
+      val dto: OpeningHoursDTO = emptyDto.copy(sunday = Seq(openingTime), monday = Seq(closingTime))
+
+      postRequest(dto) ~> routes ~> check {
+        status should ===(StatusCodes.OK)
+        contentType should ===(ContentTypes.`text/plain(UTF-8)`)
+        val expected =
+          """Monday: Closed
+            |Tuesday: Closed
+            |Wednesday: Closed
+            |Thursday: Closed
+            |Friday: Closed
+            |Saturday: Closed
+            |Sunday: 8 PM - 2 AM""".stripMargin
+        entityAs[String] should ===(expected)
+      }
+    }
+
     "fail when more opening time is the same as the closing time" in {
       val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  72000)
       val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 72000)

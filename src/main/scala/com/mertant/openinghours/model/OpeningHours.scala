@@ -36,7 +36,8 @@ object OpeningHours {
     }
 
     openingTimes.map { case ((start, _), index) =>
-      val (nextTime, nextType): (TimeOfWeek, TimeType) = timesAndTypes(index + 1)
+      val nextIndex = (index + 1) % timesAndTypes.size // loop back to start if opening time is the last of the week
+      val (nextTime, nextType): (TimeOfWeek, TimeType) = timesAndTypes(nextIndex)
       if (!nextType.eq(TimeType.close)) {
         throw new IllegalArgumentException("Each opening time should be immediately followed by a closing time.")
       }
