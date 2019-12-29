@@ -1,0 +1,15 @@
+{
+  "monday": [],
+  "tuesday": [
+    {
+      "type": "open",
+      "value": 36000
+    }
+
+  ],
+  "wednesday": [],
+  "thursday": [],
+  "friday": [],
+  "saturday":  [],
+  "sunday":  []
+}
