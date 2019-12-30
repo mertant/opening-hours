@@ -12,6 +12,7 @@ object WeekDay extends Enumeration {
   val saturday  = Value(5, "Saturday")
   val sunday    = Value(6, "Sunday")
 
+  // same as apply, but with more informative error message (instead of Enumeration's default NoSuchElementException)
   def of(value: Int): Value = {
     Try(WeekDay.apply(value)).getOrElse(
       throw new IllegalArgumentException(s"Day must be between 0 and ${this.values.size-1} but was $value)"))

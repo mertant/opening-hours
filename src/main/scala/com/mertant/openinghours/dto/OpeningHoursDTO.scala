@@ -2,14 +2,14 @@ package com.mertant.openinghours.dto
 
 import com.mertant.openinghours.model.TimeType.TimeType
 
-case class OpeningHoursDTO(monday: Seq[OpeningTimeDTO],
-                           tuesday: Seq[OpeningTimeDTO],
-                           wednesday: Seq[OpeningTimeDTO],
-                           thursday: Seq[OpeningTimeDTO],
-                           friday: Seq[OpeningTimeDTO],
-                           saturday: Seq[OpeningTimeDTO],
-                           sunday: Seq[OpeningTimeDTO])
+case class OpeningHoursDTO(monday: Seq[MomentDTO],
+                           tuesday: Seq[MomentDTO],
+                           wednesday: Seq[MomentDTO],
+                           thursday: Seq[MomentDTO],
+                           friday: Seq[MomentDTO],
+                           saturday: Seq[MomentDTO],
+                           sunday: Seq[MomentDTO])
 
-case class OpeningTimeDTO(`type`: TimeType,
-                          value: Int // time of day in seconds
+case class MomentDTO(`type`: TimeType,
+                     value: Int // time of day in seconds
                          )

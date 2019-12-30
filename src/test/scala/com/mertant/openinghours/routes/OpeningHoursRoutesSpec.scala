@@ -2,7 +2,7 @@ package com.mertant.openinghours.routes
 
 import com.mertant.openinghours.model.TimeType.{close, open}
 import com.mertant.openinghours.JsonFormats
-import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
+import com.mertant.openinghours.dto.{OpeningHoursDTO, MomentDTO}
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
@@ -54,8 +54,8 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "return text for object with one opening" in {
-      val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  32400)
-      val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 72000)
+      val openingTime: MomentDTO = MomentDTO(open,  32400)
+      val closingTime: MomentDTO = MomentDTO(close, 72000)
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime, closingTime))
 
       postRequest(dto) ~> routes ~> check {
@@ -74,10 +74,10 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "return text for object with several openings" in {
-      val openingTime1: OpeningTimeDTO = OpeningTimeDTO(open,  32400)
-      val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 72000)
+      val openingTime1: MomentDTO = MomentDTO(open,  32400)
+      val closingTime: MomentDTO = MomentDTO(close, 72000)
       val times1 = Seq(openingTime1, closingTime)
-      val openingTime2: OpeningTimeDTO = OpeningTimeDTO(open,  43200)
+      val openingTime2: MomentDTO = MomentDTO(open,  43200)
       val times2 = Seq(openingTime2, closingTime)
       val dto: OpeningHoursDTO = emptyDto.copy(monday = times1, tuesday = times1, sunday = times2)
 
@@ -97,8 +97,8 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "return text for object with an opening that crosses over into the next day" in {
-      val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  72000)
-      val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 7200)
+      val openingTime: MomentDTO = MomentDTO(open,  72000)
+      val closingTime: MomentDTO = MomentDTO(close, 7200)
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime), tuesday = Seq(closingTime))
 
       postRequest(dto) ~> routes ~> check {
@@ -117,8 +117,8 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "return text for object with an opening that crosses over into the next week (Sun-Mon)" in {
-      val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  72000)
-      val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 7200)
+      val openingTime: MomentDTO = MomentDTO(open,  72000)
+      val closingTime: MomentDTO = MomentDTO(close, 7200)
       val dto: OpeningHoursDTO = emptyDto.copy(sunday = Seq(openingTime), monday = Seq(closingTime))
 
       postRequest(dto) ~> routes ~> check {
@@ -137,8 +137,8 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "fail when more opening time is the same as the closing time" in {
-      val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  72000)
-      val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 72000)
+      val openingTime: MomentDTO = MomentDTO(open,  72000)
+      val closingTime: MomentDTO = MomentDTO(close, 72000)
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime, closingTime))
 
       postRequest(dto) ~> routes ~> check {
@@ -147,8 +147,8 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "fail when more opening hours than closing hours" in {
-      val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  32400)
-      val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 72000)
+      val openingTime: MomentDTO = MomentDTO(open,  32400)
+      val closingTime: MomentDTO = MomentDTO(close, 72000)
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime), tuesday = Seq(openingTime, closingTime))
 
       postRequest(dto) ~> routes ~> check {
@@ -157,8 +157,8 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "fail when more closing hours than opening hours" in {
-      val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  32400)
-      val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 72000)
+      val openingTime: MomentDTO = MomentDTO(open,  32400)
+      val closingTime: MomentDTO = MomentDTO(close, 72000)
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(closingTime), tuesday = Seq(openingTime, closingTime))
 
       postRequest(dto) ~> routes ~> check {
@@ -167,10 +167,10 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "fail when intervals overlap (input alternates open and close)" in {
-      val openingTime1: OpeningTimeDTO = OpeningTimeDTO(open,  32400)
-      val closingTime1: OpeningTimeDTO = OpeningTimeDTO(close, 72000)
-      val openingTime2: OpeningTimeDTO = OpeningTimeDTO(open,  64000)
-      val closingTime2: OpeningTimeDTO = OpeningTimeDTO(close, 79200)
+      val openingTime1: MomentDTO = MomentDTO(open,  32400)
+      val closingTime1: MomentDTO = MomentDTO(close, 72000)
+      val openingTime2: MomentDTO = MomentDTO(open,  64000)
+      val closingTime2: MomentDTO = MomentDTO(close, 79200)
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime1, closingTime1, openingTime2, closingTime2))
 
       postRequest(dto) ~> routes ~> check {
@@ -179,10 +179,10 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "fail when intervals overlap (input in chronological order)" in {
-      val openingTime1: OpeningTimeDTO = OpeningTimeDTO(open,  32400)
-      val closingTime1: OpeningTimeDTO = OpeningTimeDTO(close, 72000)
-      val openingTime2: OpeningTimeDTO = OpeningTimeDTO(open,  64000)
-      val closingTime2: OpeningTimeDTO = OpeningTimeDTO(close, 79200)
+      val openingTime1: MomentDTO = MomentDTO(open,  32400)
+      val closingTime1: MomentDTO = MomentDTO(close, 72000)
+      val openingTime2: MomentDTO = MomentDTO(open,  64000)
+      val closingTime2: MomentDTO = MomentDTO(close, 79200)
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime1, openingTime2, closingTime1, closingTime2))
 
       postRequest(dto) ~> routes ~> check {
@@ -191,8 +191,8 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "fail when intervals are duplicated" in {
-      val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  32400)
-      val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 72000)
+      val openingTime: MomentDTO = MomentDTO(open,  32400)
+      val closingTime: MomentDTO = MomentDTO(close, 72000)
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime, closingTime, openingTime, closingTime))
 
       postRequest(dto) ~> routes ~> check {
@@ -201,8 +201,8 @@ class OpeningHoursRoutesSpec extends WordSpec with Matchers with ScalaFutures wi
     }
 
     "fail when secondOfDay is above max value (86399 = 11.59:59 PM)" in {
-      val openingTime: OpeningTimeDTO = OpeningTimeDTO(open,  32400)
-      val closingTime: OpeningTimeDTO = OpeningTimeDTO(close, 86400)
+      val openingTime: MomentDTO = MomentDTO(open,  32400)
+      val closingTime: MomentDTO = MomentDTO(close, 86400)
       val dto: OpeningHoursDTO = emptyDto.copy(monday = Seq(openingTime, closingTime))
 
       postRequest(dto) ~> routes ~> check {

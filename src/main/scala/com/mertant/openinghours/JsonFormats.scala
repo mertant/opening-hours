@@ -1,6 +1,6 @@
 package com.mertant.openinghours
 
-import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
+import com.mertant.openinghours.dto.{OpeningHoursDTO, MomentDTO}
 import com.mertant.openinghours.model.TimeType
 import spray.json.{DefaultJsonProtocol, DeserializationException, JsString, JsValue, JsonFormat}
 
@@ -28,6 +28,6 @@ object JsonFormats  {
 
   implicit val TimeTypeFormat = new EnumFormat(TimeType)
 
-  implicit val openingTimeDTOFormat = jsonFormat2(OpeningTimeDTO)
-  implicit val openingHoursDTOFormat = jsonFormat7(OpeningHoursDTO)
+  implicit val momentDtoFormat = jsonFormat2(MomentDTO)
+  implicit val openingHoursDtoFormat = jsonFormat7(OpeningHoursDTO)
 }

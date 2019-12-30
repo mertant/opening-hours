@@ -1,6 +1,6 @@
 package com.mertant.openinghours.model
 
-import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
+import com.mertant.openinghours.dto.{OpeningHoursDTO, MomentDTO}
 import java.time.LocalTime
 
 import com.mertant.openinghours.model.TimeType.TimeType
@@ -12,8 +12,8 @@ case class OpeningHours(intervals: Seq[Interval]) {
 
 object OpeningHours {
   def fromDto(dto: OpeningHoursDTO): OpeningHours = {
-    val days: Seq[Seq[OpeningTimeDTO]] = Seq(dto.monday, dto.tuesday, dto.wednesday, dto.thursday, dto.friday, dto.saturday, dto.sunday)
-    val intervals: Seq[Interval] = dayOpeningHoursToIntervals(days)
+    val momentsByDay: Seq[Seq[MomentDTO]] = Seq(dto.monday, dto.tuesday, dto.wednesday, dto.thursday, dto.friday, dto.saturday, dto.sunday)
+    val intervals: Seq[Interval] = dayOpeningHoursToIntervals(momentsByDay)
 
     if (hasOverlaps(intervals)) {
       throw new IllegalArgumentException("Opening periods should not overlap.")
@@ -22,24 +22,28 @@ object OpeningHours {
     new OpeningHours(intervals)
   }
 
-  private def dayOpeningHoursToIntervals(days: Seq[Seq[OpeningTimeDTO]]): Seq[Interval] = {
-    val intervalsWithDays: Seq[(OpeningTimeDTO, Int)] = days.zipWithIndex.flatMap { case (ivals, index) =>
-      ivals.map((_, index))
+  private def dayOpeningHoursToIntervals(momentsByDay: Seq[Seq[MomentDTO]]): Seq[Interval] = {
+    val momentsWithDays: Seq[(MomentDTO, WeekDay)] = momentsByDay.zipWithIndex.flatMap { case (moment, dayOfWeekIndex) =>
+      moment.map((_, WeekDay.of(dayOfWeekIndex)))
     }
 
-    val timesAndTypes: Seq[(TimeOfWeek, TimeType)] = intervalsWithDays.map { case (ival, dayOfWeek) =>
-      val time = LocalTime.ofSecondOfDay(ival.value)
-      (TimeOfWeek(dayOfWeek, time), ival.`type`)
+    val timesOfWeek: Seq[(TimeOfWeek, TimeType)] = momentsWithDays.map { case (moment, dayOfWeek) =>
+      val time = LocalTime.ofSecondOfDay(moment.value)
+      (TimeOfWeek(dayOfWeek, time), moment.`type`)
     }
 
-    val openingTimes = timesAndTypes.zipWithIndex.filter { case ((_, timeType), _) => timeType == TimeType.open }
-    if (openingTimes.size * 2 != timesAndTypes.size) {
+    timesOfWeekToIntervals(timesOfWeek)
+  }
+
+  private def timesOfWeekToIntervals(timesOfWeekAndTypes: Seq[(TimeOfWeek, TimeType)]): Seq[Interval] = {
+    val openingTimesOnly = timesOfWeekAndTypes.zipWithIndex.filter { case ((_, timeType), _) => timeType == TimeType.open }
+    if (openingTimesOnly.size * 2 != timesOfWeekAndTypes.size) {
       throw new IllegalArgumentException("There should be an equal amount of opening and closing times.")
     }
 
-    openingTimes.map { case ((start, _), index) =>
-      val nextIndex = (index + 1) % timesAndTypes.size // loop back to start if opening time is the last of the week
-      val (nextTime, nextType): (TimeOfWeek, TimeType) = timesAndTypes(nextIndex)
+    openingTimesOnly.map { case ((start, _), index) =>
+      val nextIndex = (index + 1) % timesOfWeekAndTypes.size // loop back to start if opening time is the last of the week
+      val (nextTime, nextType): (TimeOfWeek, TimeType) = timesOfWeekAndTypes(nextIndex)
       if (!nextType.eq(TimeType.close)) {
         throw new IllegalArgumentException("Each opening time should be immediately followed by a closing time.")
       }

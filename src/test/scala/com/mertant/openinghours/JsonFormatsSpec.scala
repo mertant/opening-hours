@@ -2,7 +2,7 @@ package com.mertant.openinghours
 
 import com.mertant.openinghours.model.TimeType.{close, open}
 import com.mertant.openinghours.JsonFormats._
-import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
+import com.mertant.openinghours.dto.{OpeningHoursDTO, MomentDTO}
 import com.mertant.openinghours.model.TimeType
 import org.scalatest.{Matchers, WordSpec}
 import spray.json.{DeserializationException, JsString, enrichString}
@@ -12,34 +12,34 @@ class JsonFormatsSpec extends WordSpec with Matchers {
 
   "OpeningHoursDTO format" should {
     "be able to read empty" in {
-      val dto: OpeningHoursDTO = openingHoursDTOFormat.read(emptyJsonString.parseJson)
+      val dto: OpeningHoursDTO = openingHoursDtoFormat.read(emptyJsonString.parseJson)
       dto shouldEqual emptyDto
     }
 
     "be able to read one opening interval per day" in {
-      val dto: OpeningHoursDTO = openingHoursDTOFormat.read(mondayOnlyJsonString.parseJson)
+      val dto: OpeningHoursDTO = openingHoursDtoFormat.read(mondayOnlyJsonString.parseJson)
       dto.monday.size shouldBe 2
     }
 
     "be able to read several opening intervals per day" in {
-      val dto: OpeningHoursDTO = openingHoursDTOFormat.read(severalJsonString.parseJson)
+      val dto: OpeningHoursDTO = openingHoursDtoFormat.read(severalJsonString.parseJson)
       dto.monday.size shouldBe 2
       dto.tuesday.size shouldBe 2
       dto.sunday.size shouldBe 4
     }
 
     "require all days to have at least an empty array" in {
-      an [DeserializationException] should be thrownBy openingHoursDTOFormat.read(deficientJsonString.parseJson)
+      an [DeserializationException] should be thrownBy openingHoursDtoFormat.read(deficientJsonString.parseJson)
     }
 
     "require correct TimeType" in {
-      an [IllegalArgumentException] should be thrownBy openingHoursDTOFormat.read(invalidTimeTypeJsonString.parseJson)
+      an [IllegalArgumentException] should be thrownBy openingHoursDtoFormat.read(invalidTimeTypeJsonString.parseJson)
     }
 
     "be able to write" in {
-      openingHoursDTOFormat.write(emptyDto).asJsObject shouldEqual emptyJsonString.parseJson
-      openingHoursDTOFormat.write(mondayOnlyDto).asJsObject shouldEqual mondayOnlyJsonString.parseJson
-      openingHoursDTOFormat.write(severalDto) shouldEqual severalJsonString.parseJson
+      openingHoursDtoFormat.write(emptyDto).asJsObject shouldEqual emptyJsonString.parseJson
+      openingHoursDtoFormat.write(mondayOnlyDto).asJsObject shouldEqual mondayOnlyJsonString.parseJson
+      openingHoursDtoFormat.write(severalDto) shouldEqual severalJsonString.parseJson
     }
   }
 
@@ -142,11 +142,11 @@ object JsonFormatsSpec {
     sunday = Seq.empty
   )
 
-  val intervals1 = Seq(OpeningTimeDTO(open, 32400), OpeningTimeDTO(close, 72000))
+  val intervals1 = Seq(MomentDTO(open, 32400), MomentDTO(close, 72000))
   val mondayOnlyDto: OpeningHoursDTO = emptyDto.copy(monday = intervals1)
 
   val intervals2 = Seq(
-    OpeningTimeDTO(open, 32400), OpeningTimeDTO(close, 62800),
-    OpeningTimeDTO(open, 70000), OpeningTimeDTO(close, 72000))
+    MomentDTO(open, 32400), MomentDTO(close, 62800),
+    MomentDTO(open, 70000), MomentDTO(close, 72000))
   val severalDto: OpeningHoursDTO = emptyDto.copy(monday = intervals1, tuesday = intervals1, sunday = intervals2)
 }
