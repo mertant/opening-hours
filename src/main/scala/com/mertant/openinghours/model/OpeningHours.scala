@@ -2,7 +2,9 @@ package com.mertant.openinghours.model
 
 import com.mertant.openinghours.dto.{OpeningHoursDTO, OpeningTimeDTO}
 import java.time.LocalTime
+
 import com.mertant.openinghours.model.TimeType.TimeType
+import com.mertant.openinghours.model.WeekDay.WeekDay
 
 case class OpeningHours(intervals: Seq[Interval]) {
   def humanReadableString: String = OpeningHours.toHumanReadableString(this)
@@ -62,21 +64,23 @@ object OpeningHours {
   private val daySeparator: String = "\n"
 
   def toHumanReadableString(openingHours: OpeningHours): String = {
-    val dayStrings = WeekDay.values.toSeq.map { weekDay: WeekDay.Value =>
-      val intervalsForDay: Seq[Interval] = openingHours.intervals.filter(_.start.weekDay == weekDay)
-      val intervalStrings: Seq[String] = intervalsToStrings(intervalsForDay)
-      val intervalsString = if (intervalStrings.isEmpty) "Closed" else intervalStrings.mkString(intervalSeparator)
-      s"$weekDay: $intervalsString"
-    }
+    val weekDaysInOrder = WeekDay.values.toSeq
+    val dayStrings = weekDaysInOrder.map(openingHoursStringForDay(openingHours, _))
     dayStrings.mkString(daySeparator)
   }
 
-  private def intervalsToStrings(intervals: Seq[Interval]): Seq[String] = {
-    val intervalStrings: Seq[String] = intervals.map { case Interval(start, end) =>
+  private def openingHoursStringForDay(openingHours: OpeningHours, day: WeekDay): String = {
+    val intervalsForDay: Seq[Interval] = openingHours.intervals.filter(_.start.weekDay == day)
+    val intervalStrings: Seq[String] = openingHourStringsForIntervals(intervalsForDay)
+    val dayOpeningHoursString = if (intervalStrings.isEmpty) "Closed" else intervalStrings.mkString(intervalSeparator)
+    s"$day: $dayOpeningHoursString"
+  }
+
+  private def openingHourStringsForIntervals(intervals: Seq[Interval]): Seq[String] = {
+    intervals.map { case Interval(start, end) =>
       val endString = toAmPmString(end.time)
       s"${toAmPmString(start.time)} - $endString"
     }
-    intervalStrings
   }
 
   def toAmPmString(time: LocalTime): String = {
